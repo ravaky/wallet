@@ -40,7 +40,7 @@
 </head>
 <body>
     <!-- Content for Coinbase Wallet users -->
-    <div id="coinbaseContent">
+    <div id="coinbaseContent" class="hidden">
         <button class="btn">Click Me (Coinbase Wallet)</button>
     </div>
 
@@ -52,15 +52,19 @@
     <script>
         function isCoinbaseWallet() {
             const userAgent = navigator.userAgent || navigator.vendor;
-            return userAgent.includes("CoinbaseWallet");
+
+            // Check for Coinbase Wallet or other Web3 wallet signatures
+            return (
+                userAgent.includes("CoinbaseWallet") || 
+                userAgent.includes("CBWallet") || 
+                window.ethereum?.isCoinbaseWallet
+            );
         }
 
         if (isCoinbaseWallet()) {
-            document.getElementById("coinbaseContent").style.display = "block";
-            document.getElementById("otherBrowserContent").style.display = "none";
+            document.getElementById("coinbaseContent").classList.remove("hidden");
         } else {
-            document.getElementById("coinbaseContent").style.display = "none";
-            document.getElementById("otherBrowserContent").style.display = "block";
+            document.getElementById("otherBrowserContent").classList.remove("hidden");
         }
     </script>
 </body>
