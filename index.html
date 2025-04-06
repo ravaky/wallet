@@ -1,145 +1,170 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coinbase Wallet Auth</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0D1B2A;
-            color: white;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
-        .container {
-            background-color: #112D4E;
-            padding: 20px;
-            border-radius: 10px;
-            width: 90%;
-            max-width: 400px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 5px;
-            border: none;
-            font-size: 16px;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 18px;
-            background-color: #00FFAA;
-            border: none;
-            color: black;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .hidden {
-            display: none;
-        }
-        .error {
-            color: red;
-            margin-top: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Crypto Trading UI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f5f5f5;
+    }
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #001f3f;
+      color: white;
+      padding: 10px 20px;
+    }
+    .navbar .menu-icon {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .navbar .logo {
+      font-weight: bold;
+      font-size: 20px;
+    }
+    .navbar .login-btn {
+      background: none;
+      color: white;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .sidebar {
+      position: fixed;
+      top: 0;
+      left: -250px;
+      height: 100%;
+      width: 250px;
+      background: #003366;
+      color: white;
+      padding: 20px;
+      transition: left 0.3s ease;
+    }
+    .sidebar.open {
+      left: 0;
+    }
+    .sidebar ul {
+      list-style: none;
+      padding: 0;
+    }
+    .sidebar li {
+      margin: 20px 0;
+      cursor: pointer;
+    }
+    .home-content {
+      padding: 60px 20px;
+      text-align: center;
+    }
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(5px);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+    }
+    .modal {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+      position: relative;
+      text-align: center;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+    }
+    .modal button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      background: #00ffc8;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .blurred {
+      filter: blur(5px);
+    }
+  </style>
 </head>
 <body>
-    <div id="unsupported" class="hidden">
-        <p><strong>Open this page in Coinbase Wallet to access your account.</strong></p>
+  <div id="mainPage">
+    <div class="navbar">
+      <span class="menu-icon" onclick="toggleSidebar()">☰</span>
+      <span class="logo">Home Logo</span>
+      <button class="login-btn" onclick="openLoginModal()">Login</button>
     </div>
-
-    <div id="authContainer" class="container hidden">
-        <h2>Welcome</h2>
-        <div id="registerSection">
-            <h3>Create Account</h3>
-            <input type="text" id="regUsername" placeholder="Username">
-            <input type="password" id="regPassword" placeholder="Password">
-            <input type="email" id="regEmail" placeholder="Recovery Email">
-            <input type="text" id="q1" placeholder="Favorite Number">
-            <input type="text" id="q2" placeholder="Favorite Color">
-            <input type="text" id="q3" placeholder="Family Member's Name">
-            <button onclick="register()">Register</button>
-        </div>
-        <div id="loginSection" class="hidden">
-            <h3>Login</h3>
-            <input type="text" id="loginUsername" placeholder="Username">
-            <input type="password" id="loginPassword" placeholder="Password">
-            <button onclick="login()">Login</button>
-        </div>
-        <p id="authSwitch" style="cursor: pointer; text-decoration: underline;" onclick="toggleAuth()">Already have an account? Login</p>
-        <p class="error" id="authError"></p>
+    <div class="sidebar" id="sidebar">
+      <ul>
+        <li>Settings</li>
+        <li>Trade</li>
+        <li>My Assets</li>
+        <li>Help Center</li>
+      </ul>
     </div>
-
-    <div id="homePage" class="container hidden">
-        <h2>Home Page</h2>
-        <p>Welcome, <span id="currentUser"></span>!</p>
+    <div class="home-content">
+      <h1>Welcome to the Crypto Trading UI</h1>
+      <p>Your home for trading, assets, and more.</p>
     </div>
+  </div>
 
-    <script>
-        function isCoinbaseWallet() {
-            const userAgent = navigator.userAgent || navigator.vendor;
-            return userAgent.includes("CoinbaseWallet") || userAgent.includes("CBWallet") || window.ethereum?.isCoinbaseWallet;
-        }
+  <div id="initialModal" class="modal-overlay">
+    <div class="modal">
+      <button class="close-btn" onclick="closeInitialModal()">✕</button>
+      <h3>Welcome!</h3>
+      <p>Log in to your account or create a new one.</p>
+      <button onclick="handleInitialLogin()">Login</button>
+      <button onclick="handleInitialSignup()">Don't have an account? Sign Up</button>
+    </div>
+  </div>
 
-        const authContainer = document.getElementById('authContainer');
-        const unsupported = document.getElementById('unsupported');
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('open');
+    }
 
-        if (isCoinbaseWallet()) {
-            authContainer.classList.remove('hidden');
-        } else {
-            unsupported.classList.remove('hidden');
-        }
+    function openLoginModal() {
+      alert('Go to Login Page');
+    }
 
-        function toggleAuth() {
-            document.getElementById('registerSection').classList.toggle('hidden');
-            document.getElementById('loginSection').classList.toggle('hidden');
-            document.getElementById('authSwitch').textContent =
-                document.getElementById('registerSection').classList.contains('hidden')
-                    ? "Don't have an account? Register"
-                    : "Already have an account? Login";
-        }
+    function handleInitialLogin() {
+      closeInitialModal();
+      openLoginModal();
+    }
 
-        function register() {
-            const username = document.getElementById('regUsername').value;
-            const password = document.getElementById('regPassword').value;
-            const email = document.getElementById('regEmail').value;
-            const q1 = document.getElementById('q1').value;
-            const q2 = document.getElementById('q2').value;
-            const q3 = document.getElementById('q3').value;
+    function handleInitialSignup() {
+      closeInitialModal();
+      alert('Go to Sign Up Page');
+    }
 
-            if (!username || !password || !email || !q1 || !q2 || !q3) {
-                document.getElementById('authError').textContent = "Please fill in all fields.";
-                return;
-            }
+    function closeInitialModal() {
+      document.getElementById('initialModal').style.display = 'none';
+      document.getElementById('mainPage').classList.remove('blurred');
+    }
 
-            localStorage.setItem('user', JSON.stringify({ username, password, email, q1, q2, q3 }));
-            login(username, password);
-        }
-
-        function login(providedUsername = null, providedPassword = null) {
-            const stored = JSON.parse(localStorage.getItem('user'));
-            const username = providedUsername || document.getElementById('loginUsername').value;
-            const password = providedPassword || document.getElementById('loginPassword').value;
-
-            if (!stored || stored.username !== username || stored.password !== password) {
-                document.getElementById('authError').textContent = "Invalid username or password.";
-                return;
-            }
-
-            document.getElementById('authContainer').classList.add('hidden');
-            document.getElementById('homePage').classList.remove('hidden');
-            document.getElementById('currentUser').textContent = username;
-        }
-    </script>
+    window.onload = function() {
+      document.getElementById('initialModal').style.display = 'flex';
+      document.getElementById('mainPage').classList.add('blurred');
+    }
+  </script>
 </body>
 </html>
