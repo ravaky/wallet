@@ -3,68 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mobile Web Page</title>
+    <title>Crypto Trading UI</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: white;
-            margin: 0;
             font-family: Arial, sans-serif;
+            background-color: #0D1B2A;
+            color: white;
             text-align: center;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
-        .hidden {
-            display: none;
+        .container {
+            width: 95%;
+            max-width: 400px;
+            background-color: #112D4E;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        .price {
+            font-size: 20px;
+            color: #00FFAA;
+        }
+        .chart {
+            background-color: #0B132B;
+            height: 120px;
+            margin-top: 15px;
+            border-radius: 10px;
+        }
+        .button-container {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-around;
         }
         .btn {
-            padding: 15px 30px;
-            font-size: 18px;
-            color: white;
-            background-color: #007bff;
+            padding: 8px 15px;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
+            font-size: 16px;
+        }
+        .buy {
+            background-color: green;
+            color: white;
+        }
+        .sell {
+            background-color: red;
+            color: white;
+        }
+        .input-container {
+            margin-top: 15px;
             text-align: center;
         }
-        .btn:hover {
-            background-color: #0056b3;
+        .input-container input {
+            width: 90%;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 5px;
+            border: none;
         }
-        .bold-message {
-            font-size: 24px;
-            font-weight: bold;
-            color: black;
+        .numpad {
+            display: none;
+            margin-top: 10px;
+        }
+        .numpad button {
+            width: 30%;
+            padding: 8px;
+            margin: 5px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+        }
+        .max, .min {
+            width: 45%;
+            background-color: #888;
+            color: white;
         }
     </style>
 </head>
 <body>
-    <!-- Content for Coinbase Wallet users -->
-    <div id="coinbaseContent" class="hidden">
-        <button class="btn">Click Me (Coinbase Wallet)</button>
+    <div class="container" id="mainScreen">
+        <h2>BTC Coin</h2>
+        <p class="price">US $82,459.1</p>
+        <p style="color: red;">-2244.19 (-2.649%)</p>
+        <div class="chart"></div>
+        <div class="button-container">
+            <button class="btn buy" onclick="showBuyScreen()">BUY UP</button>
+            <button class="btn sell">BUY SHORT</button>
+        </div>
     </div>
-
-    <!-- Message for Other Browsers -->
-    <div id="otherBrowserContent" class="hidden">
-        <p class="bold-message">Open in Coinbase Wallet</p>
+    
+    <div class="container" id="buyScreen" style="display: none;">
+        <h2>BTC Coin Delivery</h2>
+        <p>Delivery Time: 30S</p>
+        <div class="input-container">
+            <label for="priceInput">Price Range:</label>
+            <input type="text" id="priceInput" placeholder="Enter Price" onclick="toggleNumpad()" readonly>
+            <div class="numpad" id="numpad">
+                <button onclick="setMin()" class="min">Min</button>
+                <button onclick="setMax()" class="max">Max</button>
+                <br>
+                <button onclick="addNumber(1)">1</button>
+                <button onclick="addNumber(2)">2</button>
+                <button onclick="addNumber(3)">3</button>
+                <br>
+                <button onclick="addNumber(4)">4</button>
+                <button onclick="addNumber(5)">5</button>
+                <button onclick="addNumber(6)">6</button>
+                <br>
+                <button onclick="addNumber(7)">7</button>
+                <button onclick="addNumber(8)">8</button>
+                <button onclick="addNumber(9)">9</button>
+                <br>
+                <button onclick="clearInput()">C</button>
+                <button onclick="addNumber(0)">0</button>
+                <button onclick="removeLast()">⌫</button>
+            </div>
+        </div>
+        <div class="button-container">
+            <button class="btn buy">Buy Long</button>
+            <button class="btn sell" onclick="showMainScreen()">Buy Short</button>
+        </div>
     </div>
 
     <script>
-        function isCoinbaseWallet() {
-            const userAgent = navigator.userAgent || navigator.vendor;
-
-            // Check for Coinbase Wallet or other Web3 wallet signatures
-            return (
-                userAgent.includes("CoinbaseWallet") || 
-                userAgent.includes("CBWallet") || 
-                window.ethereum?.isCoinbaseWallet
-            );
+        function showBuyScreen() {
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('buyScreen').style.display = 'block';
         }
-
-        if (isCoinbaseWallet()) {
-            document.getElementById("coinbaseContent").classList.remove("hidden");
-        } else {
-            document.getElementById("otherBrowserContent").classList.remove("hidden");
+        function showMainScreen() {
+            document.getElementById('buyScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+        }
+        function toggleNumpad() {
+            const numpad = document.getElementById('numpad');
+            numpad.style.display = numpad.style.display === 'block' ? 'none' : 'block';
+        }
+        function addNumber(num) {
+            document.getElementById('priceInput').value += num;
+        }
+        function removeLast() {
+            let input = document.getElementById('priceInput');
+            input.value = input.value.slice(0, -1);
+        }
+        function clearInput() {
+            document.getElementById('priceInput').value = '';
+        }
+        function setMin() {
+            document.getElementById('priceInput').value = '100'; // Example min value
+        }
+        function setMax() {
+            document.getElementById('priceInput').value = '10000'; // Example max value
         }
     </script>
 </body>
