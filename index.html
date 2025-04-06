@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crypto Trading UI</title>
+    <title>Coinbase Wallet Auth</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -19,148 +19,126 @@
             height: 100vh;
         }
         .container {
-            width: 95%;
-            max-width: 400px;
             background-color: #112D4E;
-            padding: 15px;
+            padding: 20px;
             border-radius: 10px;
-            margin-top: 10px;
-        }
-        .price {
-            font-size: 20px;
-            color: #00FFAA;
-        }
-        .chart {
-            background-color: #0B132B;
-            height: 120px;
-            margin-top: 15px;
-            border-radius: 10px;
-        }
-        .button-container {
-            margin-top: 15px;
-            display: flex;
-            justify-content: space-around;
-        }
-        .btn {
-            padding: 8px 15px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .buy {
-            background-color: green;
-            color: white;
-        }
-        .sell {
-            background-color: red;
-            color: white;
-        }
-        .input-container {
-            margin-top: 15px;
-            text-align: center;
-        }
-        .input-container input {
             width: 90%;
-            padding: 8px;
-            font-size: 16px;
-            text-align: center;
+            max-width: 400px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
             border-radius: 5px;
             border: none;
+            font-size: 16px;
         }
-        .numpad {
-            display: none;
+        button {
+            width: 100%;
+            padding: 10px;
             margin-top: 10px;
-        }
-        .numpad button {
-            width: 30%;
-            padding: 8px;
-            margin: 5px;
-            font-size: 16px;
-            border-radius: 5px;
+            font-size: 18px;
+            background-color: #00FFAA;
             border: none;
+            color: black;
+            border-radius: 5px;
             cursor: pointer;
         }
-        .max, .min {
-            width: 45%;
-            background-color: #888;
-            color: white;
+        .hidden {
+            display: none;
+        }
+        .error {
+            color: red;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
-    <div class="container" id="mainScreen">
-        <h2>BTC Coin</h2>
-        <p class="price">US $82,459.1</p>
-        <p style="color: red;">-2244.19 (-2.649%)</p>
-        <div class="chart"></div>
-        <div class="button-container">
-            <button class="btn buy" onclick="showBuyScreen()">BUY UP</button>
-            <button class="btn sell">BUY SHORT</button>
-        </div>
+    <div id="unsupported" class="hidden">
+        <p><strong>Open this page in Coinbase Wallet to access your account.</strong></p>
     </div>
-    
-    <div class="container" id="buyScreen" style="display: none;">
-        <h2>BTC Coin Delivery</h2>
-        <p>Delivery Time: 30S</p>
-        <div class="input-container">
-            <label for="priceInput">Price Range:</label>
-            <input type="text" id="priceInput" placeholder="Enter Price" onclick="toggleNumpad()" readonly>
-            <div class="numpad" id="numpad">
-                <button onclick="setMin()" class="min">Min</button>
-                <button onclick="setMax()" class="max">Max</button>
-                <br>
-                <button onclick="addNumber(1)">1</button>
-                <button onclick="addNumber(2)">2</button>
-                <button onclick="addNumber(3)">3</button>
-                <br>
-                <button onclick="addNumber(4)">4</button>
-                <button onclick="addNumber(5)">5</button>
-                <button onclick="addNumber(6)">6</button>
-                <br>
-                <button onclick="addNumber(7)">7</button>
-                <button onclick="addNumber(8)">8</button>
-                <button onclick="addNumber(9)">9</button>
-                <br>
-                <button onclick="clearInput()">C</button>
-                <button onclick="addNumber(0)">0</button>
-                <button onclick="removeLast()">⌫</button>
-            </div>
+
+    <div id="authContainer" class="container hidden">
+        <h2>Welcome</h2>
+        <div id="registerSection">
+            <h3>Create Account</h3>
+            <input type="text" id="regUsername" placeholder="Username">
+            <input type="password" id="regPassword" placeholder="Password">
+            <input type="email" id="regEmail" placeholder="Recovery Email">
+            <input type="text" id="q1" placeholder="Favorite Number">
+            <input type="text" id="q2" placeholder="Favorite Color">
+            <input type="text" id="q3" placeholder="Family Member's Name">
+            <button onclick="register()">Register</button>
         </div>
-        <div class="button-container">
-            <button class="btn buy">Buy Long</button>
-            <button class="btn sell" onclick="showMainScreen()">Buy Short</button>
+        <div id="loginSection" class="hidden">
+            <h3>Login</h3>
+            <input type="text" id="loginUsername" placeholder="Username">
+            <input type="password" id="loginPassword" placeholder="Password">
+            <button onclick="login()">Login</button>
         </div>
+        <p id="authSwitch" style="cursor: pointer; text-decoration: underline;" onclick="toggleAuth()">Already have an account? Login</p>
+        <p class="error" id="authError"></p>
+    </div>
+
+    <div id="homePage" class="container hidden">
+        <h2>Home Page</h2>
+        <p>Welcome, <span id="currentUser"></span>!</p>
     </div>
 
     <script>
-        function showBuyScreen() {
-            document.getElementById('mainScreen').style.display = 'none';
-            document.getElementById('buyScreen').style.display = 'block';
+        function isCoinbaseWallet() {
+            const userAgent = navigator.userAgent || navigator.vendor;
+            return userAgent.includes("CoinbaseWallet") || userAgent.includes("CBWallet") || window.ethereum?.isCoinbaseWallet;
         }
-        function showMainScreen() {
-            document.getElementById('buyScreen').style.display = 'none';
-            document.getElementById('mainScreen').style.display = 'block';
+
+        const authContainer = document.getElementById('authContainer');
+        const unsupported = document.getElementById('unsupported');
+
+        if (isCoinbaseWallet()) {
+            authContainer.classList.remove('hidden');
+        } else {
+            unsupported.classList.remove('hidden');
         }
-        function toggleNumpad() {
-            const numpad = document.getElementById('numpad');
-            numpad.style.display = numpad.style.display === 'block' ? 'none' : 'block';
+
+        function toggleAuth() {
+            document.getElementById('registerSection').classList.toggle('hidden');
+            document.getElementById('loginSection').classList.toggle('hidden');
+            document.getElementById('authSwitch').textContent =
+                document.getElementById('registerSection').classList.contains('hidden')
+                    ? "Don't have an account? Register"
+                    : "Already have an account? Login";
         }
-        function addNumber(num) {
-            document.getElementById('priceInput').value += num;
+
+        function register() {
+            const username = document.getElementById('regUsername').value;
+            const password = document.getElementById('regPassword').value;
+            const email = document.getElementById('regEmail').value;
+            const q1 = document.getElementById('q1').value;
+            const q2 = document.getElementById('q2').value;
+            const q3 = document.getElementById('q3').value;
+
+            if (!username || !password || !email || !q1 || !q2 || !q3) {
+                document.getElementById('authError').textContent = "Please fill in all fields.";
+                return;
+            }
+
+            localStorage.setItem('user', JSON.stringify({ username, password, email, q1, q2, q3 }));
+            login(username, password);
         }
-        function removeLast() {
-            let input = document.getElementById('priceInput');
-            input.value = input.value.slice(0, -1);
-        }
-        function clearInput() {
-            document.getElementById('priceInput').value = '';
-        }
-        function setMin() {
-            document.getElementById('priceInput').value = '100'; // Example min value
-        }
-        function setMax() {
-            document.getElementById('priceInput').value = '10000'; // Example max value
+
+        function login(providedUsername = null, providedPassword = null) {
+            const stored = JSON.parse(localStorage.getItem('user'));
+            const username = providedUsername || document.getElementById('loginUsername').value;
+            const password = providedPassword || document.getElementById('loginPassword').value;
+
+            if (!stored || stored.username !== username || stored.password !== password) {
+                document.getElementById('authError').textContent = "Invalid username or password.";
+                return;
+            }
+
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('homePage').classList.remove('hidden');
+            document.getElementById('currentUser').textContent = username;
         }
     </script>
 </body>
